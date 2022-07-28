@@ -1,59 +1,63 @@
 # Overview
-This repository contains a React frontend, and an Express backend that the frontend connects to.
+This demo project contains two apps, the Backend and the Frontend.
+
+In each app's folder, there is a Dockerfile to containerize the apps.
 
 # Objective
-Deploy the frontend and backend to somewhere publicly accessible over the internet. The AWS Free Tier should be more than sufficient to run this project, but you may use any platform and tooling you'd like for your solution.
-
-Fork this repo as a base. You may change any code in this repository to suit the infrastructure you build in this code challenge.
-
+In this project demo, I am deploying the two app in different containerized forms using docker containers. This is done using an EC2 ubuntu instance.
+Instead of using localhost, I am using the public IP of my EC2 instance for this demonstration.
 # Submission
-1. A github repo that has been forked from this repo with all your code.
-2. Modify this README file with instructions for:
-* Any tools needed to deploy your infrastructure
-* All the steps needed to repeat your deployment process
-* URLs to the your deployed frontend.
+1. Firstly, I have created an ec2 instance from AWS and accessed the server via SSH
+2. Then I have also forked and cloned the challenge project to my server
+3. I downloaded Docker to my ec2 instance using (sudo apt install docker.io -y)
+4. I performed the following steps to create a docker image for my backend app:
+* Inside the backend folder, I have created a Dockerfile which is use to create image for the backend app
+* I ran ($ sudo docker build -t backend .) command to provision the image specified in the Dockerfile from DockerHub.
+* I located this image by running ($ sudo docker images) which showed the image info.
+* The image for backend app is successfully created.
+5. To create image for the frontend application, I followed the below steps:
+* I cd inside the frontend folder and created a Dockerfile in that folder.
+* My Dockerfile created a frontend image using the command ($sudo docker build -t frontend .)
+* I also verified that the frontend image is created by running ($ sudo docker images) command.
+6. At this point, I have created the images for both the frontend and the backend apps. 
+7. The next was to create a container
+ 
+# Configuration changes in the application code
 
-# Evaluation
-You will be evaluated on the ease to replicate your infrastructure. This is a combination of quality of the instructions, as well as any scripts to automate the overall setup process.
+1. I needed some configuration changes done in the config.js of both the Frontend and the Backend apps.
+2. to do these, I went to the frontend app folder and inside src folder to locate a config.js
+* Inside config.js, I replaced localhost with the public ip of my current ec2 instance and the port will remained same.
+3. Similary, I went to the backend app folder and edited the config.js.
+* Inside config.js, I replaced localhost with the public ip of my current ec2 instance and the port will remained same.
 
-# Setup your environment
-Install nodejs. Binaries and installers can be found on nodejs.org.
-https://nodejs.org/en/download/
+# Running the application container
 
-For macOS or Linux, Nodejs can usually be found in your preferred package manager.
-https://nodejs.org/en/download/package-manager/
+1. Now, I run the backend app in a container with the container name "backend_app", I used following commands to set up the backend app and to map the port 8080 to server port 8080:
+* sudo docker run -itd --name backend_app -p 8080:8080 backend sh
+2. Now container for backend app was created. I ran the application in the container and the prot is listened 8080 using my pulic ip by running these:
+* sudo docker exec -it backend_app /bin/sh
+* npm ci
+* npm start
+3. Next step was to make sure that the backend app was running on port 8080, I checked this by using "http://public_ip:8080"
 
-Depending on the Linux distribution, the Node Package Manager `npm` may need to be installed separately.
+4. Similary, I started another terminal to run the frontend app in a container with the container name "frontend_app". I used following commands to set up the frontend application in a container and mapped the port 3000 to server port 3000. To do this, I ran:
+* sudo docker run -itd --name frontend_app -p 3000:3000 frontend sh
 
-# Running the project
-The backend and the frontend will need to run on separate processes. The backend should be started first.
-```
-cd backend
-npm ci
-npm start
-```
-The backend should response to a GET request on `localhost:8080`.
+5. The container for backend app was created, I ran the application in the container and listened the app's port 3000 using my pulic ip by running these:
+* sudo docker exec -it frontend_app /bin/sh
+* npm ci
+* npm start
+6. Next step was to make sure that the backend app was running on port 3000, I checked this by using "http://public_ip:3000"
 
-With the backend started, the frontend can be started.
-```
-cd frontend
-npm ci
-npm start
-```
-The frontend can be accessed at `localhost:3000`. If the frontend successfully connects to the backend, a message saying "SUCCESS" followed by a guid should be displayed on the screen.  If the connection failed, an error message will be displayed on the screen.
+# outcome of this demostration
 
-# Configuration
-The frontend has a configuration file at `frontend/src/config.js` that defines the URL to call the backend. This URL is used on `frontend/src/App.js#12`, where the front end will make the GET call during the initial load of the page.
+1. when you hit the  url for backend app by using "http://public_ip:8080" you will get respose with an id of the Backend app.
+2. In the Frontend app, there is a function App() which is returning response id of the Backend app as an output if the connectivity is good between the Backend and the Frontend or else it gives error "fail to fetch" message.
 
-The backend has a configuration file at `backend/config.js` that defines the host that the frontend will be calling from. This URL is used in the `Access-Control-Allow-Origin` CORS header, read in `backend/index.js#14`
+# realtime demo urls:
 
-# Optional Extras
-The core requirement for this challenge is to get the provided application up and running for consumption over the public internet. That being said, there are some opportunities in this code challenge to demonstrate your skill sets that are above and beyond the core requirement.
+- for my backend app use: http://44.203.45.158:8080
+- for my frontend app use: http://44.203.45.158:3000
 
-A few examples of extras for this coding challenge:
-1. Dockerizing the application
-2. Scripts to set up the infrastructure
-3. Providing a pipeline for the application deployment
-4. Running the application in a serverless environment
-
-This is not an exhaustive list of extra features that could be added to this code challenge. At the end of the day, this section is for you to demonstrate any skills you want to show that’s not captured in the core requirement.
+Note: If connectivity is in place, the Frontend app will display same ID as the Backend app as a message.
+There is no "SUCCESS" message as this is not indicated in the code by the developer. In order to get the "SUCCESS" message, the developer will need to update the App.js file.
